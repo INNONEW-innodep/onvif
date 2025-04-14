@@ -7,9 +7,9 @@ package ptz
 import (
 	"context"
 	"github.com/juju/errors"
-	"github.com/use-go/onvif"
-	"github.com/use-go/onvif/sdk"
-	"github.com/use-go/onvif/ptz"
+	"github.com/ljhljh127/onvif"
+	"github.com/ljhljh127/onvifvif/sdk"
+	"github.com/ljhljh127/onvifvif/ptz"
 )
 
 // Call_SendAuxiliaryCommand forwards the call to dev.CallMethod() then parses the payload of the reply as a SendAuxiliaryCommandResponse.

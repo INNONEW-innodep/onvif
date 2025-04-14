@@ -10,9 +10,9 @@ import (
 	"testing"
 
 	"github.com/beevik/etree"
-	"github.com/use-go/onvif"
-	"github.com/use-go/onvif/device"
-	discover "github.com/use-go/onvif/ws-discovery"
+	"github.com/ljhljh127/onvif"
+	"github.com/ljhljh127/onvifvif/device"
+	discover "github.com/ljhljh127/onvifvif/ws-discovery"
 )
 
 func TestGetAvailableDevicesAtSpecificEthernetInterface(t *testing.T) {

@@ -4,8 +4,8 @@ import (
 	"errors"
 
 	"github.com/ljhljh127/onvif/device"
-	"github.com/ljhljh127/onvifvif/media"
-	"github.com/ljhljh127/onvifvif/ptz"
+	"github.com/ljhljh127/onvif/media"
+	"github.com/ljhljh127/onvif/ptz"
 )
 
 func getPTZStructByName(name string) (interface{}, error) {

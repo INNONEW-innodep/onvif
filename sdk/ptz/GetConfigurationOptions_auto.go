@@ -8,8 +8,8 @@ import (
 	"context"
 	"github.com/juju/errors"
 	"github.com/ljhljh127/onvif"
-	"github.com/ljhljh127/onvifvif/sdk"
-	"github.com/ljhljh127/onvifvif/ptz"
+	"github.com/ljhljh127/onvif/sdk"
+	"github.com/ljhljh127/onvif/ptz"
 )
 
 // Call_GetConfigurationOptions forwards the call to dev.CallMethod() then parses the payload of the reply as a GetConfigurationOptionsResponse.

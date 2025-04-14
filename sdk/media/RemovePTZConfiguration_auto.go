@@ -8,8 +8,8 @@ import (
 	"context"
 	"github.com/juju/errors"
 	"github.com/ljhljh127/onvif"
-	"github.com/ljhljh127/onvifvif/sdk"
-	"github.com/ljhljh127/onvifvif/media"
+	"github.com/ljhljh127/onvif/sdk"
+	"github.com/ljhljh127/onvif/media"
 )
 
 // Call_RemovePTZConfiguration forwards the call to dev.CallMethod() then parses the payload of the reply as a RemovePTZConfigurationResponse.

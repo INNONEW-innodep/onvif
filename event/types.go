@@ -2,7 +2,7 @@ package event
 
 import (
 	"github.com/ljhljh127/onvif/xsd"
-	"github.com/ljhljh127/onvifvif/xsd/onvif"
+	"github.com/ljhljh127/onvif/xsd/onvif"
 )
 
 // Address Alias

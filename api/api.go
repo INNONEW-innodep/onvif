@@ -16,9 +16,9 @@ import (
 	"github.com/beevik/etree"
 	"github.com/gin-gonic/gin"
 	"github.com/ljhljh127/onvif"
-	"github.com/ljhljh127/onvifvif/gosoap"
-	"github.com/ljhljh127/onvifvif/networking"
-	wsdiscovery "github.com/ljhljh127/onvifvif/ws-discovery"
+	"github.com/ljhljh127/onvif/gosoap"
+	"github.com/ljhljh127/onvif/networking"
+	wsdiscovery "github.com/ljhljh127/onvif/ws-discovery"
 )
 
 var (

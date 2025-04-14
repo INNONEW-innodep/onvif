@@ -7,9 +7,9 @@ import (
 	"net/http"
 
 	goonvif "github.com/ljhljh127/onvif"
-	"github.com/ljhljh127/onvifvif/device"
-	sdk "github.com/ljhljh127/onvifvif/sdk/device"
-	"github.com/ljhljh127/onvifvif/xsd/onvif"
+	"github.com/ljhljh127/onvif/device"
+	sdk "github.com/ljhljh127/onvif/sdk/device"
+	"github.com/ljhljh127/onvif/xsd/onvif"
 )
 
 const (
@@ -60,7 +60,7 @@ func main() {
 	if err != nil {
 		log.Println(err)
 	} else {
-		// You could use https://github.com/ljhljh127/onvifvif/gosoap for pretty printing response
+		// You could use https://github.com/ljhljh127/onvif/gosoap for pretty printing response
 		fmt.Println(createUserResponse)
 	}
 

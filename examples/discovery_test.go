@@ -11,8 +11,8 @@ import (
 
 	"github.com/beevik/etree"
 	"github.com/ljhljh127/onvif"
-	"github.com/ljhljh127/onvifvif/device"
-	discover "github.com/ljhljh127/onvifvif/ws-discovery"
+	"github.com/ljhljh127/onvif/device"
+	discover "github.com/ljhljh127/onvif/ws-discovery"
 )
 
 func TestGetAvailableDevicesAtSpecificEthernetInterface(t *testing.T) {

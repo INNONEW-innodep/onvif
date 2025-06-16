@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"reflect"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -128,21 +129,72 @@ func GetAvailableDevicesAtSpecificEthernetInterface(interfaceName string) ([]Dev
 			return nil, err
 		}
 
-		for _, xaddr := range doc.Root().FindElements("./Body/ProbeMatches/ProbeMatch/XAddrs") {
-			xaddr := strings.Split(strings.Split(xaddr.Text(), " ")[0], "/")[2]
-			if !nvtDevicesSeen[xaddr] {
-				dev, err := NewDevice(DeviceParams{Xaddr: strings.Split(xaddr, " ")[0]})
-				if err != nil {
-					// TODO(jfsmig) print a warning
-				} else {
-					nvtDevicesSeen[xaddr] = true
-					nvtDevices = append(nvtDevices, *dev)
-				}
+		//  ProbeMatch 전체를 순회하며 탐색
+		for _, probeMatch := range doc.Root().FindElements("./Body/ProbeMatches/ProbeMatch") {
+			// XAddr 추출
+			xaddrElement := probeMatch.FindElement("./XAddrs")
+			if xaddrElement == nil {
+				continue
 			}
+
+			xaddrText := xaddrElement.Text()
+			xaddr := strings.Split(strings.Split(xaddrText, " ")[0], "/")[2]
+			if nvtDevicesSeen[xaddr] {
+				continue
+			}
+
+			//  Device 생성
+			dev, err := NewDevice(DeviceParams{Xaddr: strings.Split(xaddr, " ")[0]})
+			if err != nil {
+				// TODO(jfsmig) print a warning
+				continue
+			}
+
+			//  Scopes에서 디바이스 정보 파싱해서 dev.info에 저장
+			if scopesElement := probeMatch.FindElement("./Scopes"); scopesElement != nil {
+				scopeText := scopesElement.Text()
+				parseDeviceInfoFromScopes(dev, scopeText)
+			}
+
+			nvtDevicesSeen[xaddr] = true
+			nvtDevices = append(nvtDevices, *dev)
 		}
 	}
 
 	return nvtDevices, nil
+}
+
+func parseDeviceInfoFromScopes(dev *Device, scopeText string) {
+	// 제조사명 추출
+	nameRegex := regexp.MustCompile(`onvif://www\.onvif\.org/name/([A-Za-z0-9_-]+)`)
+	if match := nameRegex.FindStringSubmatch(scopeText); len(match) > 1 {
+		dev.info.Manufacturer = match[1]
+	}
+
+	// 모델명 추출
+	hardwareRegex := regexp.MustCompile(`onvif://www\.onvif\.org/hardware/([A-Za-z0-9_-]+)`)
+	if match := hardwareRegex.FindStringSubmatch(scopeText); len(match) > 1 {
+		dev.info.Model = match[1]
+	}
+
+	// 하드웨어 ID 추출
+	hwIdRegex := regexp.MustCompile(`onvif://www\.onvif\.org/hardware/([A-Za-z0-9_-]+)`)
+	if match := hwIdRegex.FindStringSubmatch(scopeText); len(match) > 1 {
+		dev.info.HardwareId = match[1]
+	}
+
+	// MAC 주소 추출
+	macRegex := regexp.MustCompile(`onvif://www\.onvif\.org/MAC/([A-Fa-f0-9:_-]+)`)
+	if match := macRegex.FindStringSubmatch(scopeText); len(match) > 1 {
+		// MAC을 SerialNumber에 저장하거나 별도 필드 추가
+		dev.info.SerialNumber = match[1]
+	}
+
+	// 위치 정보나 기타 정보를 FirmwareVersion에 임시 저장할 수도 있음
+	locationRegex := regexp.MustCompile(`onvif://www\.onvif\.org/location/([A-Za-z0-9_-]+)`)
+	if match := locationRegex.FindStringSubmatch(scopeText); len(match) > 1 {
+		dev.info.FirmwareVersion = match[1]
+	}
 }
 
 func (dev *Device) getSupportedServices(resp *http.Response) error {

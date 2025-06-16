@@ -115,6 +115,12 @@ func getDeviceService() []DeviceServices {
 
 			servicesMap := dev.GetServices()
 			deviceServices := parseServices(servicesMap, xaddr)
+
+			// 디바이스 정보 추가
+			deviceInfo := dev.GetDeviceInfo()
+			fmt.Printf("Manufacturer: %s, Model: %s\n",
+				deviceInfo.Manufacturer, deviceInfo.Model)
+
 			deviceList = append(deviceList, deviceServices)
 
 		}

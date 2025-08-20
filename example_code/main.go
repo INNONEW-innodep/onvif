@@ -131,9 +131,10 @@ func getDeviceService() []DeviceServices {
 // 주어진 로그인 정보를 포함하여 onvif 디바이스 객체를 생성
 func newOnvifDevice(xaddr, username, passwd string) (*onvif.Device, error) {
 	device, err := onvif.NewDevice(onvif.DeviceParams{
-		Xaddr:    xaddr,
-		Username: username,
-		Password: passwd,
+		Xaddr:      xaddr,
+		Username:   username,
+		Password:   passwd,
+		TimeOffset: 0,
 	})
 	if err != nil {
 		return nil, err
@@ -307,6 +308,9 @@ func main() {
 		fmt.Println("Error creating device:", err)
 		return
 	}
+
+	// 카메라 시간 동기화
+	onvifDevice.SyncTimeWithCamera()
 
 	// 카메라 정보 가져오는 부
 	deviceInfo, err := getDeviceInfo(onvifDevice)

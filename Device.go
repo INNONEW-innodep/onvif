@@ -3,6 +3,8 @@ package onvif
 import (
 	"encoding/xml"
 	"errors"
+	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -10,6 +12,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/beevik/etree"
 	"github.com/ljhljh127/onvif/device"
@@ -87,6 +90,7 @@ type DeviceParams struct {
 	Username   string
 	Password   string
 	HttpClient *http.Client
+	TimeOffset time.Duration
 }
 
 // GetServices return available endpoints
@@ -102,6 +106,74 @@ func (dev *Device) GetDeviceInfo() DeviceInfo {
 // GetDeviceParams return available endpoints
 func (dev *Device) GetDeviceParams() DeviceParams {
 	return dev.params
+}
+
+func (dev *Device) SyncTimeWithCamera() error {
+	cameraTime, err := dev.getCameraTime()
+	if err != nil {
+		return fmt.Errorf("failed to get camera time: %w", err)
+	}
+	systemTime := time.Now().UTC()
+	timeDiff := cameraTime.Sub(systemTime)
+	requiredOffset := timeDiff
+	dev.setTimeOffset(requiredOffset)
+	return nil
+}
+
+func (dev *Device) setTimeOffset(offset time.Duration) {
+	dev.params.TimeOffset = offset
+}
+
+func (dev *Device) getCameraTime() (*time.Time, error) {
+	resp, err := dev.CallMethod(device.GetSystemDateAndTime{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to call GetSystemDateAndTime: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected HTTP status: %d", resp.StatusCode)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	var timeResp struct {
+		SystemDateAndTime struct {
+			UTCDateTime struct {
+				Date struct {
+					Year  int `xml:"Year"`
+					Month int `xml:"Month"`
+					Day   int `xml:"Day"`
+				} `xml:"Date"`
+				Time struct {
+					Hour   int `xml:"Hour"`
+					Minute int `xml:"Minute"`
+					Second int `xml:"Second"`
+				} `xml:"Time"`
+			} `xml:"UTCDateTime"`
+		} `xml:"Body>GetSystemDateAndTimeResponse>SystemDateAndTime"`
+	}
+
+	if err := xml.Unmarshal(body, &timeResp); err != nil {
+		return nil, fmt.Errorf("failed to parse XML response: %w", err)
+	}
+
+	dt := timeResp.SystemDateAndTime.UTCDateTime
+	cameraTime := time.Date(
+		dt.Date.Year,
+		time.Month(dt.Date.Month),
+		dt.Date.Day,
+		dt.Time.Hour,
+		dt.Time.Minute,
+		dt.Time.Second,
+		0,
+		time.UTC,
+	)
+
+	return &cameraTime, nil
 }
 
 func readResponse(resp *http.Response) string {
@@ -337,7 +409,7 @@ func (dev Device) callMethodDo(endpoint string, method interface{}) (*http.Respo
 
 	//Auth Handling
 	if dev.params.Username != "" && dev.params.Password != "" {
-		soap.AddWSSecurity(dev.params.Username, dev.params.Password)
+		soap.AddWSSecurity(dev.params.Username, dev.params.Password, dev.params.TimeOffset)
 	}
 
 	return networking.SendSoap(dev.params.HttpClient, endpoint, soap.String())
